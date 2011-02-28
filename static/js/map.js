@@ -135,7 +135,7 @@ function initialize() {
                 mapTypeId: google.maps.MapTypeId.ROADMAP,
                 streetViewControl: false,
                 center: new google.maps.LatLng(37.7593835169, -122.4271774291),
-                zoom: 18
+                zoom: 13
               }
   );
 
