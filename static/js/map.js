@@ -65,7 +65,9 @@ gmap.plotLocations = function(data){
     var marker = gmap.markers[j];
     bounds.extend(marker.getPosition());
   }
-  gmap.map.panToBounds(bounds);
+  if (gmap.markers.length) {
+    gmap.map.fitBounds(bounds);
+  }
 };
 
 gmap.loadPictures = function(location_id, marker){
@@ -86,9 +88,12 @@ gmap.loadPictures = function(location_id, marker){
 };
 
 gmap.onLoadPictures = function(data, marker){
+  if (gmap.infowindow) {
+    gmap.infowindow.close();
+  }
   var height = 100 + 150 * ((data['data'].length / 3)+1);
-
-  var rootNode = $("<div style='height:"+height+"px;'></div>");
+  var width = 50 + 150 * Math.min(data['data'].length, 3);
+  var rootNode = $("<div style='height:"+height+"px; width:"+width+"px;'></div>");
   rootNode.append($("<h2>"+marker.getTitle()+"</h2>"));
   var rootTable = $("<table></table>");
   rootNode.append(rootTable);
@@ -103,7 +108,9 @@ gmap.onLoadPictures = function(data, marker){
           'background-color':'white',
           'font-family':'monospace',
           'font-size':'11px'})).append(
-        $("<img src='"+d.images['thumbnail']['url']+"'/>")
+	$("<img src='"+d.images['thumbnail']['url']+"'/>").click(
+	  function(_d){ return function(e){igview.showPicture(_d);}; }(d)
+        )
       );
     }
     curRow.append(curCell);
@@ -113,11 +120,11 @@ gmap.onLoadPictures = function(data, marker){
     }
   }
   rootNode.append(rootTable);
-  var infowindow = new google.maps.InfoWindow(
+  gmap.infowindow = new google.maps.InfoWindow(
     {
       content: rootNode[0]
     });
-  infowindow.open(gmap.map, marker);
+  gmap.infowindow.open(gmap.map, marker);
 };
 
 function initialize() {
@@ -158,7 +165,7 @@ function addMarker(data) {
       {
         position: new google.maps.LatLng(data.lat, data.lng),
         map: gmap.map,
-      title: data.name
+        title: data.name
       }
     );
     google.maps.event.addListener(
